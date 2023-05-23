@@ -1,8 +1,8 @@
 # Mekeko
 
-Open-source MikuMikuDance clone, I guess.
+Open-source MikuMikuDance clone, I guess. But also, is whatever I feel like.
 
-Supports Windows MacOS and Linux, for now...
+WIP! Not in a usable state (even a little bit). But I'm making frequent commits.
 
 # License
 
