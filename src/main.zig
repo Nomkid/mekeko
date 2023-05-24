@@ -12,6 +12,6 @@ pub fn main() !void {
     // const path = std.mem.span(std.os.argv[0]);
     // std.debug.print("path: {s}\n", .{path});
 
-    const path = "";
+    const path = "./test/test.pmx";
     _ = try pmx.loadModel(path, allocator);
 }

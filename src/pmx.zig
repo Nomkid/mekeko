@@ -7,8 +7,8 @@ const ModelLoadError = error{
     InvalidSignature,
 };
 
-pub fn loadModel(absolute_path: []const u8, allocator: std.mem.Allocator) !t.Model {
-    const file = try std.fs.openFileAbsolute(absolute_path, .{});
+pub fn loadModel(path: []const u8, allocator: std.mem.Allocator) !t.Model {
+    const file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
     const reader = file.reader();
 
@@ -17,7 +17,6 @@ pub fn loadModel(absolute_path: []const u8, allocator: std.mem.Allocator) !t.Mod
     if (sig != PMX_SIGNATURE) return ModelLoadError.InvalidSignature;
 
     const ver = try readFloat(reader);
-    _ = ver;
 
     const globals_count = try reader.readByte();
     const globals = try allocator.alloc(u8, globals_count);
@@ -36,7 +35,7 @@ pub fn loadModel(absolute_path: []const u8, allocator: std.mem.Allocator) !t.Mod
 
     std.debug.print("name_en: {s}\n", .{name_en});
 
-    const vertex_count = @intCast(usize, try reader.readInt(i32, .Little));
+    const vertex_count = @intCast(u32, try reader.readInt(i32, .Little));
     std.debug.print("vertex_count: {d}\n", .{vertex_count});
     var vert: u32 = 0;
     while (vert < vertex_count) : (vert += 1) {
@@ -53,50 +52,50 @@ pub fn loadModel(absolute_path: []const u8, allocator: std.mem.Allocator) !t.Mod
         }
 
         const deform_type = try reader.readByte();
-        try reader.skipBytes(deform_type, .{});
-        // std.debug.print("deform_type: {d}\nfile idx: {d}\n", .{ deform_type, try file.getPos() });
-        // switch (deform_type) {
-        //     0 => {
-        //         const ind = try readIndex(reader, globals[2], true);
-        //         std.debug.print("ind: {d}\n", .{ind});
-        //     },
-        //     1 => {
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readFloat(reader);
-        //     },
-        //     2 => {
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readFloat(reader);
-        //         _ = try readFloat(reader);
-        //         _ = try readFloat(reader);
-        //         _ = try readFloat(reader);
-        //     },
-        //     3 => {
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readFloat(reader);
-        //         _ = try readVector3(reader);
-        //         _ = try readVector3(reader);
-        //         _ = try readVector3(reader);
-        //     },
-        //     4 => {
-        //         if (ver != 2.1) return error.InvalidFeatureSetForVersion;
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readIndex(reader, globals[2], true);
-        //         _ = try readFloat(reader);
-        //         _ = try readFloat(reader);
-        //         _ = try readFloat(reader);
-        //         _ = try readFloat(reader);
-        //     },
-        //     else => return error.InvalidDeformType,
-        // }
-        // std.debug.print("after deform file idx: {d}\n", .{try file.getPos()});
+        std.debug.print("deform_type: {d}\nfile idx: {d}\n", .{ deform_type, try file.getPos() });
+        // try reader.skipBytes(deform_type, .{});
+        switch (deform_type) {
+            0 => {
+                const ind = try readIndex(reader, globals[2], true);
+                std.debug.print("ind: {d}\n", .{ind});
+            },
+            1 => {
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readFloat(reader);
+            },
+            2 => {
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readFloat(reader);
+                _ = try readFloat(reader);
+                _ = try readFloat(reader);
+                _ = try readFloat(reader);
+            },
+            3 => {
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readFloat(reader);
+                _ = try readVector3(reader);
+                _ = try readVector3(reader);
+                _ = try readVector3(reader);
+            },
+            4 => {
+                if (ver != 2.1) return error.InvalidFeatureSetForVersion;
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readIndex(reader, globals[2], true);
+                _ = try readFloat(reader);
+                _ = try readFloat(reader);
+                _ = try readFloat(reader);
+                _ = try readFloat(reader);
+            },
+            else => return error.InvalidDeformType,
+        }
+        std.debug.print("after deform file idx: {d}\n", .{try file.getPos()});
 
         const edge_scale = try readFloat(reader);
         std.debug.print("edge_scale: {any}\n", .{edge_scale});
@@ -136,7 +135,7 @@ fn readFloat(reader: anytype) !f32 {
     return @bitCast(f32, buf);
 }
 
-fn readIndex(reader: anytype, size: u8, is_vertex: bool) !usize {
+fn readIndex(reader: anytype, size: u8, is_vertex: bool) !u32 {
     std.debug.print("index size: {d}\n", .{size});
     if (is_vertex) {
         const index = switch (size) {
@@ -145,7 +144,7 @@ fn readIndex(reader: anytype, size: u8, is_vertex: bool) !usize {
             4 => try reader.readInt(i32, .Little),
             else => return error.InvalidIndexSize,
         };
-        return @intCast(usize, index);
+        return @intCast(u32, index);
     } else {
         const index = switch (size) {
             1 => try reader.readInt(i8, .Little),
@@ -153,6 +152,6 @@ fn readIndex(reader: anytype, size: u8, is_vertex: bool) !usize {
             4 => try reader.readInt(i32, .Little),
             else => return error.InvalidIndexSize,
         };
-        return @intCast(usize, index);
+        return @intCast(u32, index);
     }
 }
