@@ -16,5 +16,8 @@ pub const Mesh = struct {
 };
 
 pub const Vector2 = struct { x: f32, y: f32 };
+pub const Vector2i = struct { x: i32, y: i32 };
 pub const Vector3 = struct { x: f32, y: f32, z: f32 };
+pub const Vector3i = struct { x: i32, y: i32, z: i32 };
 pub const Vector4 = struct { w: f32, x: f32, y: f32, z: f32 };
+pub const Vector4i = struct { w: i32, x: i32, y: i32, z: i32 };
