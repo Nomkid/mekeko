@@ -22,6 +22,11 @@ pub fn deinit(self: *Self) void {
     if (self.allocator) |ally| ally.free(self.data);
 }
 
+pub fn setPixel(self: *Self, x: u32, y: u32, color: [3]u8) void {
+    var i: u8 = 0;
+    while (i < 3) : (i += 1) self.data[3 * self.width * y + x * 3 + i] = color[i];
+}
+
 pub fn writeToFile(self: *Self, path: []const u8) !void {
     const file = try std.fs.cwd().createFile(path, .{});
     defer file.close();
@@ -44,12 +49,8 @@ test "draw horizontal line" {
     var img = try create(size, size, std.testing.allocator);
     defer img.deinit();
 
-    var x: u8 = 0;
-    while (x < size * 3) : (x += 3) {
-        img.data[x + 0] = 255;
-        img.data[x + 1] = 255;
-        img.data[x + 2] = 255;
-    }
+    var x: u32 = 0;
+    while (x < size) : (x += 1) img.setPixel(x, 0, [3]u8{ 255, 255, 255 });
 
     try img.writeToFile("./test/hline.ppm");
 }
@@ -59,12 +60,8 @@ test "draw vertical line" {
     var img = try create(size, size, std.testing.allocator);
     defer img.deinit();
 
-    var x: usize = 0;
-    while (x < size * size * 3) : (x += size * 3) {
-        img.data[x + 0] = 255;
-        img.data[x + 1] = 255;
-        img.data[x + 2] = 255;
-    }
+    var y: u32 = 0;
+    while (y < size) : (y += 1) img.setPixel(0, y, [3]u8{ 255, 255, 255 });
 
     try img.writeToFile("./test/vline.ppm");
 }
