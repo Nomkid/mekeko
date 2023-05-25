@@ -28,7 +28,7 @@ pub fn setPixel(self: *Self, x: u32, y: u32, color: [3]u8) void {
     while (i < 3) : (i += 1) self.data[3 * self.width * y + x * 3 + i] = color[i];
 }
 
-pub fn drawLine(self: *Self, start: t.Vector2, end: t.Vector2, color: [3]u8) void {
+pub fn drawLine(self: *Self, start: t.Vector2, end: t.Vector2, color: [3]u8) !void {
     // Bresenham's algorithm, from https://gist.github.com/bert/1085538#file-plot_line-c
     var x: i32 = 0;
     var y: i32 = 0;
@@ -38,7 +38,7 @@ pub fn drawLine(self: *Self, start: t.Vector2, end: t.Vector2, color: [3]u8) voi
     var sy: i32 = if (start.y < end.y) 1 else -1;
     var err: i32 = dx + dy;
     var e2: i32 = undefined;
-    while (x < end.x and y < end.y) {
+    while (x < @floatToInt(i32, end.x) and y < @floatToInt(i32, end.y)) {
         self.setPixel(@intCast(u32, x), @intCast(u32, y), color);
         e2 = 2 * err;
         if (e2 >= dy) {
@@ -98,7 +98,7 @@ test "draw diagonal line" {
 
     const start = t.Vector2{ .x = 1, .y = 1 };
     const end = t.Vector2{ .x = 11, .y = 5 };
-    img.drawLine(start, end, [3]u8{ 255, 255, 255 });
+    try img.drawLine(start, end, [3]u8{ 255, 255, 255 });
 
     try img.writeToFile("./test/dline.ppm");
 }
