@@ -38,3 +38,33 @@ test "write image to file" {
     for ([_]usize{ 3, 7, 11, 12, 13, 16, 17, 18, 20, 21, 22, 23, 25 }) |i| img.data[i] = 255;
     try img.writeToFile("./test/img.ppm");
 }
+
+test "draw horizontal line" {
+    const size = 24;
+    var img = try create(size, size, std.testing.allocator);
+    defer img.deinit();
+
+    var x: u8 = 0;
+    while (x < size * 3) : (x += 3) {
+        img.data[x + 0] = 255;
+        img.data[x + 1] = 255;
+        img.data[x + 2] = 255;
+    }
+
+    try img.writeToFile("./test/hline.ppm");
+}
+
+test "draw vertical line" {
+    const size = 24;
+    var img = try create(size, size, std.testing.allocator);
+    defer img.deinit();
+
+    var x: usize = 0;
+    while (x < size * size * 3) : (x += size * 3) {
+        img.data[x + 0] = 255;
+        img.data[x + 1] = 255;
+        img.data[x + 2] = 255;
+    }
+
+    try img.writeToFile("./test/vline.ppm");
+}
